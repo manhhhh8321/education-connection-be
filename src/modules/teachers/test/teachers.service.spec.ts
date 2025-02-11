@@ -73,11 +73,18 @@ describe('TeachersService', () => {
     });
 
     it('should throw an error if a student is already registered', async () => {
-      jest.spyOn(teachersModel, 'findOne').mockResolvedValue({ id: 1, email: 'teacher@gmail.com' } as Teachers);
+      jest.spyOn(teachersModel, 'findOne').mockResolvedValue({
+        id: 1,
+        email: 'teacher@gmail.com',
+      } as Teachers);
+
       jest
         .spyOn(studentService, 'findByEmails')
         .mockResolvedValue([{ id: 1, email: 'student@gmail.com' }] as Students[]);
-      jest.spyOn(teacherStudentModel, 'findOne').mockResolvedValue({ id: 1 } as TeacherStudent);
+
+      jest
+        .spyOn(teacherStudentModel, 'findAll')
+        .mockResolvedValue([{ teacherId: 1, studentId: 1 }] as TeacherStudent[]);
 
       await expect(
         service.registerStudents({ teacher: 'teacher@gmail.com', students: ['student@gmail.com'] }),
@@ -85,14 +92,25 @@ describe('TeachersService', () => {
     });
 
     it('should register students successfully', async () => {
-      jest.spyOn(teachersModel, 'findOne').mockResolvedValue({ id: 1, email: 'teacher@gmail.com' } as Teachers);
+      jest.spyOn(teachersModel, 'findOne').mockResolvedValue({
+        id: 1,
+        email: 'teacher@gmail.com',
+      } as Teachers);
+
       jest
         .spyOn(studentService, 'findByEmails')
         .mockResolvedValue([{ id: 1, email: 'student@gmail.com' }] as Students[]);
-      jest.spyOn(teacherStudentModel, 'findOne').mockResolvedValue(null);
-      jest.spyOn(teacherStudentModel, 'bulkCreate').mockResolvedValue([]);
 
-      const result = await service.registerStudents({ teacher: 'teacher@gmail.com', students: ['student@gmail.com'] });
+      jest.spyOn(teacherStudentModel, 'findAll').mockResolvedValue([]);
+
+      jest
+        .spyOn(teacherStudentModel, 'bulkCreate')
+        .mockResolvedValue([{ teacherId: 1, studentId: 1 }] as TeacherStudent[]);
+
+      const result = await service.registerStudents({
+        teacher: 'teacher@gmail.com',
+        students: ['student@gmail.com'],
+      });
 
       expect(result).toEqual({
         message: 'Successfully registered students',
